@@ -59,6 +59,11 @@ SOURCES = {
         "url": "https://www.zbtb.cn",
         "enabled": True,
     },
+    "bbda": {
+        "name": "标标达",
+        "url": "https://www.bbda.com",
+        "enabled": True,
+    },
 }
 
 # HTTP request settings

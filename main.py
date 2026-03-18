@@ -39,6 +39,7 @@ def get_scrapers(sources: Optional[tuple] = None):
     from scrapers.chinatender import ChinaTenderScraper
     from scrapers.ggzy import GGZYScraper
     from scrapers.zbtb import ZBTBScraper
+    from scrapers.bbda import BBDAScraper
 
     all_scrapers = {
         "ccgp": CCGPScraper,
@@ -46,6 +47,7 @@ def get_scrapers(sources: Optional[tuple] = None):
         "chinatender": ChinaTenderScraper,
         "ggzy": GGZYScraper,
         "zbtb": ZBTBScraper,
+        "bbda": BBDAScraper,
     }
 
     if sources:
