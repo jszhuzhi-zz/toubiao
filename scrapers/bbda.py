@@ -15,21 +15,38 @@ class BBDAScraper(BaseScraper):
     source_key = "bbda"
     base_url = "https://www.bbda.com"
 
+    def __init__(self):
+        super().__init__()
+        self._fetched = False  # bbda ignores keyword; only fetch the list once per run
+
     def search(self, keyword: str, page: int = 1) -> list[TenderItem]:
-        # Page 1 -> _0.html, page 2 -> _1.html, etc.
-        page_suffix = page - 1
-        url = f"{self.base_url}/bidlist/i_zhaobiao_0_{page_suffix}.html"
-        params = {"keyword": keyword}
+        # bbda.com does NOT filter by keyword server-side — the same general
+        # list is returned regardless of the keyword param.  Pagination is
+        # handled by search_all_pages() below, so this method is a no-op.
+        return []
 
-        resp = self._get(url, params=params, headers={
-            "Referer": "https://www.bbda.com/",
-            "Accept-Language": "zh-CN,zh;q=0.9",
-        })
-        if not resp:
+    def search_all_pages(self, keyword: str, max_pages: int = 5) -> list[TenderItem]:
+        # Override: scrape the general recent-bids list exactly once per
+        # scraper instance (ignore keyword — db deduplication handles repeats).
+        if self._fetched:
             return []
+        self._fetched = True
 
-        # Use bytes content so BeautifulSoup detects UTF-8 correctly
-        return self._parse(resp.content)
+        results = []
+        for page in range(1, max_pages + 1):
+            page_suffix = page - 1
+            url = f"{self.base_url}/bidlist/i_zhaobiao_0_{page_suffix}.html"
+            resp = self._get(url, headers={
+                "Referer": "https://www.bbda.com/",
+                "Accept-Language": "zh-CN,zh;q=0.9",
+            })
+            if not resp:
+                break
+            items = self._parse(resp.content)
+            if not items:
+                break
+            results.extend(items)
+        return results
 
     def _parse(self, html) -> list[TenderItem]:
         soup = BeautifulSoup(html, "lxml")
